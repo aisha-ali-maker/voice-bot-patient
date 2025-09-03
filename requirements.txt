@@ -1,0 +1,7 @@
+Flask
+whisper
+gtts
+google-generativeai
+werkzeug
+pydub
+numpy

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوت صوتي طبي</title>
+
+    <!-- ربط ملف manifest.json -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
+    <!-- أيقونة تظهر في المتصفح -->
+    <link rel="icon" href="{{ url_for('static', filename='icon-192.png') }}" type="image/png">
+
+    <!-- لون الثيم -->
+    <meta name="theme-color" content="#0056b3">
+
+    <!-- تسجيل service worker -->
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/static/service-worker.js")
+                .then(reg => console.log("Service Worker مسجل:", reg))
+                .catch(err => console.log("Service Worker خطأ:", err));
+        }
+    </script>
+</head>
+<body dir="rtl" style="font-family: sans-serif; background: #f0f2f5; text-align:center; padding:20px;">
+
+    <h1>👩‍⚕️ بوت صوتي طبي</h1>
+    <p>تحدث مع المساعد الصوتي الطبي مباشرة</p>
+
+    <!-- زر تسجيل الصوت -->
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="audio" accept="audio/*" capture="microphone">
+        <button type="submit">إرسال التسجيل</button>
+    </form>
+
+    <!-- عرض الرد -->
+    {% if text %}
+        <h3>النص المستخرج:</h3>
+        <p>{{ text }}</p>
+    {% endif %}
+    {% if reply %}
+        <h3>رد Gemini:</h3>
+        <p>{{ reply }}</p>
+    {% endif %}
+
+</body>
+</html>

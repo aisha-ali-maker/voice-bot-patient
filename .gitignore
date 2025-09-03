@@ -1,0 +1,11 @@
+# تجاهل ملفات كبيرة
+*.exe
+*.iso
+*.zip
+*.rar
+
+# تجاهل ملفات البرامج
+uploads/
+node_modules/
+__pycache__/
+*.log
