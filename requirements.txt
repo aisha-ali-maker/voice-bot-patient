@@ -1,5 +1,5 @@
 Flask
-openai-whisper
+faster-whisper
 gtts
 google-generativeai
 werkzeug

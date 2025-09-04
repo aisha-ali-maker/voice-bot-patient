@@ -34,14 +34,25 @@
         <button type="submit">إرسال التسجيل</button>
     </form>
 
-    <!-- عرض الرد -->
+    <!-- عرض النص المستخرج -->
     {% if text %}
         <h3>النص المستخرج:</h3>
         <p>{{ text }}</p>
     {% endif %}
+
+    <!-- عرض الرد النصي -->
     {% if reply %}
         <h3>رد Gemini:</h3>
         <p>{{ reply }}</p>
+    {% endif %}
+
+    <!-- تشغيل الرد الصوتي -->
+    {% if audio %}
+        <h3>الرد الصوتي:</h3>
+        <audio controls>
+            <source src="{{ audio }}" type="audio/mpeg">
+            متصفحك لا يدعم تشغيل الصوت.
+        </audio>
     {% endif %}
 
 </body>
