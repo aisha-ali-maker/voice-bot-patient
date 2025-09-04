@@ -21,6 +21,8 @@ model = WhisperModel(model_name, device="cpu", compute_type="int8")
 logging.info("تم تحميل الموديل بنجاح.")
 
 # ---------------- إعداد Gemini ----------------
+print("Gemini Key:", os.getenv("GEMINI_API_KEY"))
+
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 gemini_model = genai.GenerativeModel("gemini-pro")
 
