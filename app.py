@@ -4,6 +4,7 @@ import whisper
 import google.generativeai as genai
 from gtts import gTTS
 from werkzeug.utils import secure_filename
+import time
 
 # إعداد Flask
 app = Flask(__name__)
@@ -11,11 +12,13 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# تحميل نموذج Whisper
-model = whisper.load_model("base")
+# اختيار موديل Whisper من متغير بيئة أو "tiny" افتراضياً
+model_name = os.getenv("WHISPER_MODEL", "tiny")
+print(f"Loading Whisper model: {model_name}")
+model = whisper.load_model(model_name)
 
-# إعداد Gemini
-genai.configure(api_key="ضع_مفتاح_API_هنا")  # ← غيرها بمفتاحك
+# إعداد Gemini (باستخدام Environment Variable)
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 gemini = genai.GenerativeModel("gemini-pro")
 
 @app.route("/", methods=["GET", "POST"])
@@ -31,6 +34,7 @@ def upload():
     if file.filename == "":
         return redirect(url_for("index"))
 
+    # حفظ الملف الصوتي المرفوع
     filename = secure_filename(file.filename)
     filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
     file.save(filepath)
@@ -44,11 +48,12 @@ def upload():
     reply = response.text
 
     # تحويل الرد إلى صوت
+    audio_reply = os.path.join(app.config["UPLOAD_FOLDER"], f"reply_{int(time.time())}.mp3")
     tts = gTTS(reply, lang="ar")
-    audio_reply = os.path.join(app.config["UPLOAD_FOLDER"], "reply.mp3")
     tts.save(audio_reply)
 
-    return render_template("index.html", text=text, reply=reply)
+    # إرجاع الرد والملف الصوتي
+    return render_template("index.html", text=text, reply=reply, audio=audio_reply)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
