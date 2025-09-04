@@ -9,3 +9,19 @@ uploads/
 node_modules/
 __pycache__/
 *.log
+
+# ملفات الصوت الناتجة من البوت
+responses/
+*.mp3
+*.webm
+
+# إعدادات IDE
+.vscode/
+*.idea/
+
+# ملفات النظام
+.DS_Store
+Thumbs.db
+
+# أي ملفات أخرى خاصة بالبيئة المحلية
+.env
