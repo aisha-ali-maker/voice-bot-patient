@@ -1,59 +1,147 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوت صوتي طبي</title>
-
-    <!-- ربط ملف manifest.json -->
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-
-    <!-- أيقونة تظهر في المتصفح -->
-    <link rel="icon" href="{{ url_for('static', filename='icon-192.png') }}" type="image/png">
-
-    <!-- لون الثيم -->
-    <meta name="theme-color" content="#0056b3">
-
-    <!-- تسجيل service worker -->
-    <script>
-        if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("/static/service-worker.js")
-                .then(reg => console.log("Service Worker مسجل:", reg))
-                .catch(err => console.log("Service Worker خطأ:", err));
-        }
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎤 مساعد صوتي طبي</title>
+<style>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+.container {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    text-align: center;
+    width: 90%;
+    max-width: 550px;
+}
+h1 {
+    color: #0056b3;
+    margin-bottom: 25px;
+}
+.controls button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 5px;
+}
+.controls button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+.output-section {
+    margin-top: 25px;
+    text-align: right;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+#response-audio { width: 100%; margin-top: 15px; }
+#status { margin-top: 20px; font-style: italic; color: #666; height: 20px; }
+</style>
 </head>
-<body dir="rtl" style="font-family: sans-serif; background: #f0f2f5; text-align:center; padding:20px;">
+<body>
 
-    <h1>👩‍⚕️ بوت صوتي طبي</h1>
-    <p>تحدث مع المساعد الصوتي الطبي مباشرة</p>
+<div class="container">
+    <h1>🎤 تكلم مباشرة مع البوت</h1>
+    <div class="controls">
+        <button id="recordButton">بدء التسجيل</button>
+        <button id="stopButton" disabled>إيقاف التسجيل</button>
+    </div>
+    <div id="status">اضغط على "بدء التسجيل" لطرح سؤالك</div>
 
-    <!-- زر تسجيل الصوت -->
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="audio" accept="audio/*" capture="microphone">
-        <button type="submit">إرسال التسجيل</button>
-    </form>
+    <div class="output-section" id="question-section" style="display:none;">
+        <h3>🔊 سؤالك:</h3>
+        <div id="transcript"></div>
+    </div>
 
-    <!-- عرض النص المستخرج -->
-    {% if text %}
-        <h3>النص المستخرج:</h3>
-        <p>{{ text }}</p>
-    {% endif %}
+    <div class="output-section" id="answer-section" style="display:none;">
+        <h3>🎵 رد البوت:</h3>
+        <div id="bot-answer"></div>
+        <audio id="response-audio" controls></audio>
+    </div>
+</div>
 
-    <!-- عرض الرد النصي -->
-    {% if reply %}
-        <h3>رد Gemini:</h3>
-        <p>{{ reply }}</p>
-    {% endif %}
+<script>
+const recordButton = document.getElementById('recordButton');
+const stopButton = document.getElementById('stopButton');
+const statusDiv = document.getElementById('status');
+const transcriptDiv = document.getElementById('transcript');
+const botAnswerDiv = document.getElementById('bot-answer');
+const responseAudio = document.getElementById('response-audio');
+const questionSection = document.getElementById('question-section');
+const answerSection = document.getElementById('answer-section');
 
-    <!-- تشغيل الرد الصوتي -->
-    {% if audio %}
-        <h3>الرد الصوتي:</h3>
-        <audio controls>
-            <source src="{{ audio }}" type="audio/mpeg">
-            متصفحك لا يدعم تشغيل الصوت.
-        </audio>
-    {% endif %}
+let mediaRecorder;
+let audioChunks = [];
+
+recordButton.onclick = async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.onstart = () => {
+            audioChunks = [];
+            recordButton.disabled = true;
+            stopButton.disabled = false;
+            statusDiv.textContent = "التسجيل جارٍ...";
+            questionSection.style.display = 'none';
+            answerSection.style.display = 'none';
+        };
+
+        mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+
+        mediaRecorder.onstop = async () => {
+            statusDiv.textContent = "جاري معالجة طلبك...";
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const formData = new FormData();
+            formData.append("file", audioBlob, "recording.webm");
+
+            try {
+                const response = await fetch("/upload", { method: "POST", body: formData });
+                const result = await response.json();
+
+                transcriptDiv.textContent = result.question;
+                botAnswerDiv.textContent = result.answer;
+                responseAudio.src = result.audio_url;
+
+                questionSection.style.display = 'block';
+                answerSection.style.display = 'block';
+                responseAudio.play();
+
+                statusDiv.textContent = "تم استلام الرد. اضغط على بدء التسجيل لسؤال آخر.";
+            } catch(err) {
+                console.error(err);
+                statusDiv.textContent = "حدث خطأ أثناء معالجة الصوت.";
+            } finally {
+                recordButton.disabled = false;
+                stopButton.disabled = true;
+            }
+        };
+
+        mediaRecorder.start();
+    } catch (err) {
+        console.error(err);
+        statusDiv.textContent = "خطأ: لم يتم منح الإذن للوصول للميكروفون.";
+    }
+};
+
+stopButton.onclick = () => mediaRecorder.stop();
+</script>
 
 </body>
 </html>
