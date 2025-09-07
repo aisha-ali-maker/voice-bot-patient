@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import os
 from faster_whisper import WhisperModel
 import google.generativeai as genai
@@ -72,7 +72,7 @@ def upload_audio():
 
 @app.route("/responses/<path:filename>")
 def get_response_audio(filename):
-    return app.send_static_file(os.path.join(AUDIO_RESPONSES_FOLDER, filename))
+    return send_from_directory(AUDIO_RESPONSES_FOLDER, filename)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
