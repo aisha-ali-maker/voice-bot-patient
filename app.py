@@ -21,11 +21,13 @@ model = WhisperModel(model_name, device="cpu", compute_type="int8")
 logging.info("تم تحميل الموديل بنجاح.")
 
 # ---------------- إعداد Gemini ----------------
-print("Gemini Key:", os.getenv("GEMINI_API_KEY"))
+api_key = os.getenv("GEMINI_API_KEY")
+if not api_key:
+    raise ValueError("❌ لم يتم العثور على GEMINI_API_KEY في Environment variables")
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-gemini_model = genai.GenerativeModel("gemini-pro")
+genai.configure(api_key=api_key)
 gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+
 # ---------------- المسارات ----------------
 @app.route("/")
 def index():
@@ -50,9 +52,12 @@ def upload_audio():
         segments, info = model.transcribe(filepath, language="ar")
         question_text = " ".join([seg.text for seg in segments]).strip()
 
+        if not question_text:
+            return jsonify({"error": "النص المستخرج فارغ"}), 400
+
         # إرسال النص إلى Gemini
         gemini_response = gemini_model.generate_content(question_text)
-        answer_text = gemini_response.text.strip()
+        answer_text = gemini_response.text.strip() if gemini_response.text else "⚠️ لم يتم الحصول على رد من Gemini"
 
         # تحويل الرد إلى صوت
         audio_filename = f"response_{int(time.time())}.mp3"
