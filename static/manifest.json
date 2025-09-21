@@ -1,20 +1,25 @@
 {
-  "short_name": "بوت طبي",
   "name": "مساعد صوتي طبي",
+  "short_name": "بوت طبي",
+  "description": "مساعد صوتي طبي للإجابة عن مواعيد الأدوية والتعليمات.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0056b3",
   "icons": [
     {
-      "src": "/static/icon-192.png",
-      "type": "image/png",
-      "sizes": "192x192"
+      "src": "/static/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
     },
     {
-      "src": "/static/icon-512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "src": "/static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
-  ],
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#f0f2f5",
-  "theme_color": "#0056b3"
+  ]
 }
