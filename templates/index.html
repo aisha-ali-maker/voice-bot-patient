@@ -1,3 +1,4 @@
+Aisha, [9/28/2025 7:15 PM]
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -102,13 +103,14 @@ recordButton.onclick = async () => {
             const formData = new FormData();
             formData.append("file", audioBlob, "recording.webm");
 
-            try {
+Aisha, [9/28/2025 7:15 PM]
+try {
                 const response = await fetch("/upload", { method: "POST", body: formData });
                 if (!response.ok) throw new Error("Network response was not ok");
                 const result = await response.json();
 
-                transcriptDiv.textContent = result.question || "";
-                botAnswerDiv.textContent = result.answer || "";
+                transcriptDiv.textContent = result.question  "";
+                botAnswerDiv.textContent = result.answer  "";
                 responseAudio.src = result.audio_url || "";
 
                 questionSection.style.display = 'block';
