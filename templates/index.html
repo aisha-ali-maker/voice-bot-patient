@@ -1,151 +1,154 @@
-Aisha, [9/28/2025 7:15 PM]
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🎤 مساعد صوتي طبي</title>
-
-    <!-- PWA manifest -->
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-
-    <!-- أيقونات -->
-    <link rel="icon" href="{{ url_for('static', filename='icons/icon-192.png') }}" type="image/png">
-    <link rel="apple-touch-icon" sizes="192x192" href="{{ url_for('static', filename='icons/icon-192.png') }}">
-
-    <!-- ثيم -->
-    <meta name="theme-color" content="#0056b3">
-
-    <style>
-    /* نفس الستايل القديم (مبسط) */
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎤 مساعد صوتي طبي</title>
+  <style>
     body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f0f2f5;
-        color: #333;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
     }
     .container {
-        background-color: #fff;
-        padding: 30px 40px;
-        border-radius: 12px;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-        text-align: center;
-        width: 90%;
-        max-width: 550px;
+      background-color: #fff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      text-align: center;
+      width: 90%;
+      max-width: 550px;
     }
-    h1 { color: #0056b3; margin-bottom: 25px; }
-    .controls button { background-color: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 5px; }
-    .controls button:disabled { background-color: #cccccc; cursor: not-allowed; }
-    .output-section { margin-top: 25px; text-align: right; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9; }
-    #response-audio { width: 100%; margin-top: 15px; }
-    #status { margin-top: 20px; font-style: italic; color: #666; height: 20px; }
-    </style>
+    h1 {
+      color: #0056b3;
+      margin-bottom: 25px;
+    }
+    .controls button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+    }
+    .controls button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    .output-section {
+      margin-top: 25px;
+      text-align: right;
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+    #response-audio {
+      width: 100%;
+      margin-top: 15px;
+    }
+    #status {
+      margin-top: 20px;
+      font-style: italic;
+      color: #666;
+      height: 20px;
+    }
+  </style>
 </head>
 <body>
-
-<div class="container">
+  <div class="container">
     <h1>🎤 تكلم مباشرة مع البوت</h1>
     <div class="controls">
-        <button id="recordButton">بدء التسجيل</button>
-        <button id="stopButton" disabled>إيقاف التسجيل</button>
+      <button id="recordButton">بدء التسجيل</button>
+      <button id="stopButton" disabled>إيقاف التسجيل</button>
     </div>
     <div id="status">اضغط على "بدء التسجيل" لطرح سؤالك</div>
-
     <div class="output-section" id="question-section" style="display:none;">
-        <h3>🔊 سؤالك:</h3>
-        <div id="transcript"></div>
+      <h3>🔊 سؤالك:</h3>
+      <div id="transcript"></div>
     </div>
-
     <div class="output-section" id="answer-section" style="display:none;">
-        <h3>🎵 رد البوت:</h3>
-        <div id="bot-answer"></div>
-        <audio id="response-audio" controls></audio>
+      <h3>🎵 رد البوت:</h3>
+      <div id="bot-answer"></div>
+      <audio id="response-audio" controls></audio>
     </div>
-</div>
+  </div>
 
-<script>
-/* تسجيل صوت وإرسال كما كان سابقا */
-const recordButton = document.getElementById('recordButton');
-const stopButton = document.getElementById('stopButton');
-const statusDiv = document.getElementById('status');
-const transcriptDiv = document.getElementById('transcript');
-const botAnswerDiv = document.getElementById('bot-answer');
-const responseAudio = document.getElementById('response-audio');
-const questionSection = document.getElementById('question-section');
-const answerSection = document.getElementById('answer-section');
+  <script>
+    const recordButton = document.getElementById('recordButton');
+    const stopButton = document.getElementById('stopButton');
+    const statusDiv = document.getElementById('status');
+    const transcriptDiv = document.getElementById('transcript');
+    const botAnswerDiv = document.getElementById('bot-answer');
+    const responseAudio = document.getElementById('response-audio');
+    const questionSection = document.getElementById('question-section');
+    const answerSection = document.getElementById('answer-section');
 
-let mediaRecorder;
-let audioChunks = [];
+    let mediaRecorder;
+    let audioChunks = [];
 
-recordButton.onclick = async () => {
-    try {
+    recordButton.onclick = async () => {
+      try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaRecorder = new MediaRecorder(stream);
 
         mediaRecorder.onstart = () => {
-            audioChunks = [];
-            recordButton.disabled = true;
-            stopButton.disabled = false;
-            statusDiv.textContent = "التسجيل جارٍ...";
-            questionSection.style.display = 'none';
-            answerSection.style.display = 'none';
+          audioChunks = [];
+          recordButton.disabled = true;
+          stopButton.disabled = false;
+          statusDiv.textContent = "التسجيل جارٍ...";
+          questionSection.style.display = 'none';
+          answerSection.style.display = 'none';
         };
 
         mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
 
         mediaRecorder.onstop = async () => {
-            statusDiv.textContent = "جاري معالجة طلبك...";
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            const formData = new FormData();
-            formData.append("file", audioBlob, "recording.webm");
+          statusDiv.textContent = "جاري معالجة طلبك...";
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          const formData = new FormData();
+          formData.append("file", audioBlob, "recording.webm");
 
-Aisha, [9/28/2025 7:15 PM]
-try {
-                const response = await fetch("/upload", { method: "POST", body: formData });
-                if (!response.ok) throw new Error("Network response was not ok");
-                const result = await response.json();
+          try {
+            const response = await fetch("/upload", {
+              method: "POST",
+              body: formData
+            });
+            const result = await response.json();
 
-                transcriptDiv.textContent = result.question  "";
-                botAnswerDiv.textContent = result.answer  "";
-                responseAudio.src = result.audio_url || "";
+            transcriptDiv.textContent = result.question;
+            botAnswerDiv.textContent = result.answer;
+            responseAudio.src = result.audio_url;
 
-                questionSection.style.display = 'block';
-                answerSection.style.display = 'block';
-                if (responseAudio.src) responseAudio.play();
+            questionSection.style.display = 'block';
+            answerSection.style.display = 'block';
+            responseAudio.play();
 
-                statusDiv.textContent = "تم استلام الرد. اضغط على بدء التسجيل لسؤال آخر.";
-            } catch(err) {
-                console.error(err);
-                statusDiv.textContent = "حدث خطأ أثناء معالجة الصوت.";
-            } finally {
-                recordButton.disabled = false;
-                stopButton.disabled = true;
-            }
+            statusDiv.textContent = "تم استلام الرد. اضغط على بدء التسجيل لسؤال آخر.";
+          } catch(err) {
+            console.error(err);
+            statusDiv.textContent = "حدث خطأ أثناء معالجة الصوت.";
+          } finally {
+            recordButton.disabled = false;
+            stopButton.disabled = true;
+          }
         };
 
         mediaRecorder.start();
-    } catch (err) {
+      } catch (err) {
         console.error(err);
         statusDiv.textContent = "خطأ: لم يتم منح الإذن للوصول للميكروفون.";
-    }
-};
+      }
+    };
 
-stopButton.onclick = () => { if (mediaRecorder) mediaRecorder.stop(); };
-
-/* تسجيل Service Worker (يجب أن يكون مسجلًا من جذر الموقع) */
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => {
-            console.log('Service Worker مسجل:', reg);
-        }).catch(err => {
-            console.warn('Service Worker خطأ:', err);
-        });
-}
-</script>
-
+    stopButton.onclick = () => mediaRecorder.stop();
+  </script>
 </body>
 </html>
