@@ -110,7 +110,7 @@ if not api_key:
     logger.warning("GEMINI_API_KEY not found in environment. Set it on Render Secrets.")
 else:
     genai.configure(api_key=api_key)
-    gemini_model = genai.GenerativeModel("gemini-1.5-flash-latest")
+    gemini_model = genai.GenerativeModel("models/gemini-1.5-flash")
 
 
 
