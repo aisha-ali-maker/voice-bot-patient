@@ -19,7 +19,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESPONSES_FOLDER, exist_ok=True)
 
 # ---------------- Whisper ----------------
-whisper_model = WhisperModel("small", device="cpu", compute_type="int8")
+whisper_model = WhisperModel("tiny", device="cpu", compute_type="int8")
 
 # ---------------- Gemini ----------------
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
